@@ -1,0 +1,48 @@
+# Script for Installing WebExApp
+
+# Task 1: Copy all files from the source to the destination
+
+# Define source and destination paths
+$sourcePath = "\\10.4.94.106\sourcefiles$\Software\Cisco\webexapp 43.10.2.11"
+$destinationPath = "C:\temp\WebExApp"
+
+# Check if the destination folder exists, and if not, create it
+if (-not (Test-Path -Path $destinationPath -PathType Container)) {
+    New-Item -Path $destinationPath -ItemType Directory
+}
+
+# Copy files from the source to the destination
+Copy-Item -Path $sourcePath\* -Destination $destinationPath -Recurse -Force
+
+# Task 2: Install WebExApp using webexapp.msi
+
+# Define the path to the WebExApp MSI installer
+$installerPath = Join-Path -Path $destinationPath -ChildPath "webexapp.msi"
+
+# Check if the installer file exists
+if (Test-Path -Path $installerPath -PathType Leaf) {
+    # Install WebExApp silently and suppress restart
+    $installArgs = "/i `"$installerPath`" /qn /norestart"
+    
+    # Start the installation process
+    Start-Process -FilePath "msiexec.exe" -ArgumentList $installArgs -Wait -NoNewWindow
+
+    # Check the exit code
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -eq 0) {
+        Write-Host "WebExApp installation completed successfully."
+    } else {
+        Write-Host "WebExApp installation failed. Exit code: $exitCode"
+    }
+} else {
+    Write-Host "WebExApp MSI installer not found in the specified folder."
+}
+
+# Script Output for MECM
+if ($exitCode -eq 0) {
+    Write-Output "WebExApp installation completed successfully."
+    exit 0 # Success exit code for MECM
+} else {
+    Write-Output "WebExApp installation failed. Exit code: $exitCode"
+    exit $exitCode # Use the same exit code from the installation process
+}
