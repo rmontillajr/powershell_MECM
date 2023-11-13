@@ -1,0 +1,39 @@
+# Task 1: Copy all files from the Software Repository to the destination
+# Specify source and destination paths
+$sourcePath = "\\10.4.94.106\sourcefiles$\Software\Cisco\webexapp 43.10.2.11"
+$destinationPath = "C:\temp\WebExApp"
+
+# Copy files
+Copy-Item -Path $sourcePath\* -Destination $destinationPath -Recurse -Force
+
+# Check if the copy was successful
+if ($?) {
+    Write-Output "Task 1: Files copied successfully."
+} else {
+    Write-Output "Task 1: Error copying files. Check source and destination paths."
+    exit 1
+}
+
+# Task 2: Install WebExApp using install.bat in the WebExApp folder
+# Specify the path to install.bat
+$installScriptPath = Join-Path $destinationPath "WebExApp\install.bat"
+
+# Check if install.bat exists
+if (Test-Path $installScriptPath) {
+    # Run install.bat silently
+    Start-Process -FilePath $installScriptPath -ArgumentList "/quiet" -Wait
+
+    # Check the exit code of the installation
+    $exitCode = $LastExitCode
+
+    # Check if the installation was successful
+    if ($exitCode -eq 0) {
+        Write-Output "Task 2: Installation completed successfully."
+    } else {
+        Write-Output "Task 2: Installation failed. Exit Code: $exitCode"
+        exit $exitCode
+    }
+} else {
+    Write-Output "Task 2: install.bat not found in the specified location."
+    exit 1
+}

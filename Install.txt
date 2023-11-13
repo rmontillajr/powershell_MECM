@@ -1,0 +1,16 @@
+@echo off
+
+REM Set the path to the MSI installer
+set "msiPath=C:\temp\WebExApp\webexapp.msi"
+
+REM Install WebExApp with quiet mode and no restart
+msiexec /i "%msiPath%" /quiet /norestart
+
+REM Check the exit code and provide feedback
+if %errorlevel% equ 0 (
+    echo Installation successful.
+    exit /b 0
+) else (
+    echo Installation failed. Exit Code: %errorlevel%
+    exit /b %errorlevel%
+)
