@@ -1,49 +1,48 @@
-# Specify the path to search for CiscoWebExStart.exe
-$webexPath = "C:\Program Files (x86)\Webex\CiscoWebExStart.exe"
+# Script for Installing WebExApp 
 
-# Specify the path to save the log file
-$logFilePath = "\\10.4.94.106\sourcefiles$\Software\Cisco\webexapp 43.10.2.11\Logs\"
+# Task 1: Copy all files from the Software Repository to the destination
 
-# Get the current timestamp
-$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+# Specify source and destination paths
+$sourcePath = "\\10.4.94.106\sourcefiles$\Software\Cisco\webexapp 43.10.2.11"
+$destinationPath = "C:\temp\WebExApp"
 
-# Initialize an empty array to store results
-$results = @()
-
-# Get devices in the collection
-$devices = Get-WmiObject -Namespace "Root\ccm\ClientSDK" -Class CCM_Client | Select-Object -ExpandProperty DeviceID
-
-# Loop through each device
-foreach ($device in $devices) {
-    # Construct the UNC path to the device
-    $uncPath = "\\" + $device + "\" + $webexPath.Replace(':', '$')
-
-    # Check if CiscoWebExStart.exe exists
-    if (Test-Path $uncPath) {
-        # Get the version of CiscoWebExStart.exe
-        $version = (Get-Command $uncPath).FileVersionInfo.ProductVersion
-
-        # Get the hostname of the device
-        $hostname = (Get-WmiObject Win32_Computersystem).Name
-
-        # Create a hash table with the results
-        $result = @{
-            Hostname = $hostname
-            Version  = $version
-        }
-
-        # Add the result to the array
-        $results += $result
-    }
+# Check if the destination folder exists, and if not, create it
+if (-not (Test-Path -Path $destinationPath -PathType Container)) {
+    New-Item -Path $destinationPath -ItemType Directory
 }
 
-# Create the log file content
-$logContent = $results | ForEach-Object { "Hostname: $($_.Hostname), Version: $($_.Version)" }
+# Copy files
+Copy-Item -Path $sourcePath\* -Destination $destinationPath -Recurse -Force
 
-# Save the log file with timestamp
-$logFileName = "WebexVersionCheck_$timestamp.log"
-$logFileFullPath = Join-Path $logFilePath $logFileName
-$logContent | Out-File -FilePath $logFileFullPath
+# Copy files from the source to the destination
+if ($?) {
+    Write-Output "Task 1: Files copied successfully."
+} else {
+    Write-Output "Task 1: Error copying files. Check source and destination paths."
+    exit 1
+}
 
-# Display a message indicating the log file location
-Write-Host "Log file saved at: $logFileFullPath"
+# Task 2: Install WebExApp using install.bat in the WebExApp folder
+
+# Specify the path to install.bat
+$installScriptPath = Join-Path $destinationPath "WebExApp\install.bat"
+
+# Check if install.bat exists
+if (Test-Path $installScriptPath) {
+    # Run install.bat silently
+    Start-Process -FilePath $installScriptPath -ArgumentList "/quiet" -Wait
+
+    # Check the exit code of the installation
+    $exitCode = $LastExitCode
+
+    # Check if the installation was successful
+    if ($exitCode -eq 0) {
+        Write-Output "Task 2: Installation completed successfully."
+    } else {
+        Write-Output "Task 2: Installation failed. Exit Code: $exitCode"
+        exit $exitCode
+    }
+} else {
+    Write-Output "Task 2: install.bat not found in the specified location."
+    exit 1
+}
