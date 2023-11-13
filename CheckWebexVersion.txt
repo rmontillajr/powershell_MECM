@@ -1,0 +1,49 @@
+# Specify the path to search for CiscoWebExStart.exe
+$webexPath = "C:\Program Files (x86)\Webex\CiscoWebExStart.exe"
+
+# Specify the path to save the log file
+$logFilePath = "\\10.4.94.106\sourcefiles$\Software\Cisco\webexapp 43.10.2.11\Logs\"
+
+# Get the current timestamp
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+
+# Initialize an empty array to store results
+$results = @()
+
+# Get devices in the collection
+$devices = Get-WmiObject -Namespace "Root\ccm\ClientSDK" -Class CCM_Client | Select-Object -ExpandProperty DeviceID
+
+# Loop through each device
+foreach ($device in $devices) {
+    # Construct the UNC path to the device
+    $uncPath = "\\" + $device + "\" + $webexPath.Replace(':', '$')
+
+    # Check if CiscoWebExStart.exe exists
+    if (Test-Path $uncPath) {
+        # Get the version of CiscoWebExStart.exe
+        $version = (Get-Command $uncPath).FileVersionInfo.ProductVersion
+
+        # Get the hostname of the device
+        $hostname = (Get-WmiObject Win32_Computersystem).Name
+
+        # Create a hash table with the results
+        $result = @{
+            Hostname = $hostname
+            Version  = $version
+        }
+
+        # Add the result to the array
+        $results += $result
+    }
+}
+
+# Create the log file content
+$logContent = $results | ForEach-Object { "Hostname: $($_.Hostname), Version: $($_.Version)" }
+
+# Save the log file with timestamp
+$logFileName = "WebexVersionCheck_$timestamp.log"
+$logFileFullPath = Join-Path $logFilePath $logFileName
+$logContent | Out-File -FilePath $logFileFullPath
+
+# Display a message indicating the log file location
+Write-Host "Log file saved at: $logFileFullPath"
