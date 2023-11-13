@@ -1,12 +1,20 @@
+# Script for Installing WebExApp 
+
 # Task 1: Copy all files from the Software Repository to the destination
+
 # Specify source and destination paths
 $sourcePath = "\\10.4.94.106\sourcefiles$\Software\Cisco\webexapp 43.10.2.11"
 $destinationPath = "C:\temp\WebExApp"
 
+# Check if the destination folder exists, and if not, create it
+if (-not (Test-Path -Path $destinationPath -PathType Container)) {
+    New-Item -Path $destinationPath -ItemType Directory
+}
+
 # Copy files
 Copy-Item -Path $sourcePath\* -Destination $destinationPath -Recurse -Force
 
-# Check if the copy was successful
+# Copy files from the source to the destination
 if ($?) {
     Write-Output "Task 1: Files copied successfully."
 } else {
@@ -15,6 +23,7 @@ if ($?) {
 }
 
 # Task 2: Install WebExApp using install.bat in the WebExApp folder
+
 # Specify the path to install.bat
 $installScriptPath = Join-Path $destinationPath "WebExApp\install.bat"
 
