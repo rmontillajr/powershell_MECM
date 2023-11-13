@@ -22,15 +22,15 @@ if ($?) {
     exit 1
 }
 
-# Task 2: Install WebExApp using install.bat in the WebExApp folder
+# Task 2: Install WebExApp using install.bat from the local drive
 
 # Specify the path to install.bat
-$installScriptPath = Join-Path $destinationPath "WebExApp\install.bat"
+$installScriptPath = Join-Path $destinationPath "install.bat"
 
 # Check if install.bat exists
 if (Test-Path $installScriptPath) {
     # Run install.bat silently
-    Start-Process -FilePath $installScriptPath -ArgumentList "/quiet" -Wait
+    Start-Process -FilePath $installScriptPath -ArgumentList "/quiet", "/norestart" -Wait
 
     # Check the exit code of the installation
     $exitCode = $LastExitCode
