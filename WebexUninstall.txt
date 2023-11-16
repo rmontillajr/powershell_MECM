@@ -1,25 +1,24 @@
-# Comments
-# Uninstall Webex App silently without restart
+# Run Uninstall.bat and capture output and exit code
 
-# Define the path to the uninstaller
-$uninstallerPath = Join-Path $env:USERPROFILE "AppData\Local\WebEx\WebEx\Applications\PTUninstaller.exe"
+# Define the path to Uninstall.bat
+$batPath = "C:\temp\WebExApp\Uninstall.bat"
 
-# Check if the uninstaller file exists
-if (Test-Path $uninstallerPath) {
-    # Uninstall Webex App silently
-    Start-Process -FilePath $uninstallerPath -ArgumentList "/S" -Wait
-
-    # Check the exit code of the uninstallation
-    $exitCode = $LastExitCode
+# Check if Uninstall.bat exists
+if (Test-Path $batPath) {
+    # Run Uninstall.bat and capture output and exit code
+    $process = Start-Process -FilePath $batPath -PassThru -Wait -RedirectStandardOutput "$env:TEMP\UninstallOutput.txt" -RedirectStandardError "$env:TEMP\UninstallError.txt"
+    $exitCode = $process.ExitCode
 
     # Check if the uninstallation was successful
     if ($exitCode -eq 0) {
-        Write-Output "Webex App uninstallation completed successfully."
+        Write-Output "WebExApp uninstallation completed successfully."
     } else {
-        Write-Output "Webex App uninstallation failed. Exit Code: $exitCode"
-        exit $exitCode
+        Write-Output "WebExApp uninstallation failed. Exit Code: $exitCode"
     }
+
+    # Return the exit code
+    exit $exitCode
 } else {
-    Write-Output "Webex App uninstaller not found in the specified location."
+    Write-Output "Uninstall.bat not found in the specified location."
     exit 1
 }
