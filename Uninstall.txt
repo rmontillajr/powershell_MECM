@@ -1,0 +1,26 @@
+@echo off
+REM Comments
+REM Uninstall WebExApp silently without restart
+
+REM Define the path to the MSI file
+set "msiPath=C:\temp\WebExApp\webexapp.msi"
+
+REM Check if the MSI file exists
+if exist "%msiPath%" (
+    REM Uninstall WebExApp silently
+    msiexec.exe /x "%msiPath%" /quiet /norestart
+
+    REM Check the exit code of the uninstallation
+    set "exitCode=%ERRORLEVEL%"
+
+    REM Check if the uninstallation was successful
+    if %exitCode% equ 0 (
+        echo WebExApp uninstallation completed successfully.
+    ) else (
+        echo WebExApp uninstallation failed. Exit Code: %exitCode%
+        exit /b %exitCode%
+    )
+) else (
+    echo WebExApp MSI file not found in the specified location.
+    exit /b 1
+)
