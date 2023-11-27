@@ -3,13 +3,18 @@
 # Specify the Class Identifier (CLSID)
 $clsid = "{4932CEF4-2CAA-11D2-A165-0060081C43D9}"
 
+# Create an output message
+$outputMessage = "Kill Bit set for $clsid: Success"
+
 # Set the Kill Bit in the registry
 try {
     New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Ext\Settings\$clsid" -Force -ErrorAction Stop
 
-    Write-Output "Kill Bit set for $clsid: Success"
+    # Output the success message
+    Write-Output $outputMessage
     exit 0
 } catch {
+    # Output the error message
     Write-Output "Failed to set Kill Bit for $clsid: $_"
     exit 1
 }
