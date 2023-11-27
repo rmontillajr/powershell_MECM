@@ -1,0 +1,24 @@
+# PowerShell script to identify applications using actbar2.ocx
+
+# Specify the path to actbar2.ocx
+$ocxPath = "C:\Program Files (x86)\Common Files\Data Dynamics\ActiveBar2\actbar2.ocx"
+
+# Specify the output log file
+$logFile = "C:\Temp\actbar2_usage.log"
+
+# Search for the ocx file in OCX and DLL files
+$ocxReferences = Get-ChildItem -Path C:\Windows\System32\*.ocx, C:\Windows\System32\*.dll, C:\Program Files (x86)\*\*.ocx, C:\Program Files (x86)\*\*.dll -Recurse | 
+    Select-String -Pattern $ocxPath -CaseSensitive
+
+# Check if references are found
+if ($ocxReferences) {
+    # Log the references to the output file
+    $ocxReferences | ForEach-Object { $_.Line } | Out-File -FilePath $logFile -Append
+
+    # Display a message
+    Write-Output "actbar2.ocx is referenced in the following files:"
+    $ocxReferences | ForEach-Object { $_.Path }
+} else {
+    # Log a message if no references are found
+    Write-Output "actbar2.ocx is not referenced in any OCX or DLL files."
+}
